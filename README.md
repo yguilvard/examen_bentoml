@@ -1,4 +1,5 @@
 # Examen BentoML
+<https://github.com/yguilvard/examen_bentoml>
 
 Cette archive contient:
 - `admission_service_docker_image.tar.gz`
@@ -11,18 +12,26 @@ Cette archive contient:
 ### 1. Charger l'image Docker
 
 ```bash
+# Chargement de l'image
 docker load -i admission_service_docker_image.tar.gz
 ```
 
 ### 2. Initialiser le stockage persistant local
 
 ```bash
+# Creation du répertoire de fonctionnement des api
 mkdir -p data/api
+
+# Création du secret
 docker run --rm \
   -v "$(pwd)/data:/data" \
   admission_service:latest \
-  python -m src.api.create_jwt_secret_file -o /data/jwt_secret.key
-export JWT_SECRET_KEY="$(cat data/jwt_secret.key)"
+  python -m src.api.create_jwt_secret_file -o /data/.jwt_secret.key
+
+# Récupération du secret
+export JWT_SECRET_KEY="$(cat data/.jwt_secret.key)"
+
+# Création de l'utilisateur admin (test)
 docker run --rm \
   -e ADMISSION_DATA_DIRECTORY=/data \
   -e JWT_SECRET_KEY="$JWT_SECRET_KEY" \
@@ -32,7 +41,7 @@ docker run --rm \
 ```
 
 Notes :
-- `data/jwt_secret.key` est persistant et peut etre conservé entre les runs.
+- `data/.jwt_secret.key` est persistant et peut etre conservé entre les runs.
 - `data/api/users.db.json` et `data/api/tokens.db.json` sont persistés via le point de montage `/data`.
 
 ### 3. Démarrer le service
@@ -40,6 +49,7 @@ Notes :
 Dans un premier terminal :
 
 ```bash
+# Démarrage avec exposition du port et volume
 docker run --rm -p 3000:3000 \
   -e ADMISSION_DATA_DIRECTORY=/data \
   -e JWT_SECRET_KEY="$JWT_SECRET_KEY" \
@@ -52,8 +62,15 @@ docker run --rm -p 3000:3000 \
 Dans un second terminal :
 
 ```bash
+# Création de l'environnement virtuel
 python3 -m venv .venv
+
+# Activation
 source .venv/bin/activate
+
+# Installation des pré-requis
 pip install -r requirements.txt
+
+# Lancement des tests
 TEST_API_USERNAME=admin TEST_API_PASSWORD=admin TEST_API_PORT=3000 JWT_SECRET_KEY="$JWT_SECRET_KEY" pytest -v tests/
 ```
