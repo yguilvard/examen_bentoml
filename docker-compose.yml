@@ -1,0 +1,11 @@
+services:
+  admission:
+    image: admission_service:latest
+    container_name: admission_service
+    ports:
+      - "3000:3000"
+    environment:
+      ADMISSION_DATA_DIRECTORY: /home/bentoml/bento/data
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+    volumes:
+      - ./data:/home/bentoml/bento/data

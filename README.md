@@ -1,28 +1,59 @@
 # Examen BentoML
 
-Ce repertoire contient l'architecture basique afin de rendre l'évaluation pour l'examen BentoML.
+Cette archive contient:
+- `admission_service_docker_image.tar.gz`
+- `requirements.txt`
+- `README.md`
+- `tests/`
 
-Vous êtes libres d'ajouter d'autres dossiers ou fichiers si vous jugez utile de le faire.
+## Lancer le service
 
-Voici comment est construit le dossier de rendu de l'examen:
+### 1. Charger l'image Docker
 
-```bash       
-├── examen_bentoml          
-│   ├── data       
-│   │   ├── processed      
-│   │   └── raw           
-│   ├── models      
-│   ├── src       
-│   └── README.md
+```bash
+docker load -i admission_service_docker_image.tar.gz
 ```
 
-Afin de pouvoir commencer le projet vous devez suivre les étapes suivantes:
+### 2. Initialiser le stockage persistant local
 
-- Forker le projet sur votre compte github
+```bash
+mkdir -p data/api
+docker run --rm \
+  -v "$(pwd)/data:/data" \
+  admission_service:latest \
+  python -m src.api.create_jwt_secret_file -o /data/jwt_secret.key
+export JWT_SECRET_KEY="$(cat data/jwt_secret.key)"
+docker run --rm \
+  -e ADMISSION_DATA_DIRECTORY=/data \
+  -e JWT_SECRET_KEY="$JWT_SECRET_KEY" \
+  -v "$(pwd)/data:/data" \
+  admission_service:latest \
+  python -m src.adapters.users_fs --user admin --password admin
+```
 
-- Cloner le projet sur votre machine
+Notes :
+- `data/jwt_secret.key` est persistant et peut etre conservé entre les runs.
+- `data/api/users.db.json` et `data/api/tokens.db.json` sont persistés via le point de montage `/data`.
 
-- Récuperer le jeu de données à partir du lien suivant: [Lien de téléchargement]( https://datascientest.s3-eu-west-1.amazonaws.com/examen_bentoml/admissions.csv)
+### 3. Démarrer le service
 
+Dans un premier terminal :
 
-Bon travail!
+```bash
+docker run --rm -p 3000:3000 \
+  -e ADMISSION_DATA_DIRECTORY=/data \
+  -e JWT_SECRET_KEY="$JWT_SECRET_KEY" \
+  -v "$(pwd)/data:/data" \
+  admission_service:latest
+```
+
+## Lancer les tests
+
+Dans un second terminal :
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+TEST_API_USERNAME=admin TEST_API_PASSWORD=admin TEST_API_PORT=3000 JWT_SECRET_KEY="$JWT_SECRET_KEY" pytest -v tests/
+```

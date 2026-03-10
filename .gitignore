@@ -1,4 +1,12 @@
 .DS_Store
+__pycache__
+*.pyc
+models/*
 .DS_Store?
 /venv
 /clean_data.csv
+.venv
+data/*
+models/*
+.jwt_secret
+dist/
