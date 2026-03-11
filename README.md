@@ -129,11 +129,9 @@ user@host:~$ TOKEN=$(curl -s -X POST http://localhost:3000/login -H "Content-Typ
 user@host:~$ curl -s -X POST http://localhost:3000/predict \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
-  -d '{"request":{"gre_score":320,"toefl_score":110,"rating":4,"sop":4,"lor":4,"cgpa":8.5,"research_xp":1}}'
+  -d '{"request":{"gre_score":320,"toefl_score":110,"rating":4,"sop":4,"lor":4,"cgpa":8.5,"research_xp":1}}' \
   | jq
 {
   "prediction": 0.7557780264929408
 }
 ```
-
-Le endpoint `/predict` attend des valeurs brutes metier. La normalisation est appliquee dans le service avant l'appel au modele.
