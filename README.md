@@ -1,7 +1,9 @@
 # Examen BentoML
+
 <https://github.com/yguilvard/examen_bentoml>
 
 ## Mise en place
+
 ```bash
 # Decompression de l'archive
 mkdir ~/examen_bentoml && tar xzf admission_service_submission.tar.gz -C ~/examen_bentoml
@@ -9,6 +11,7 @@ cd ~/examen_bentoml
 ```
 
 Cette archive contient:
+
 - `admission_service_docker_image.tar.gz`
 - `requirements.txt`
 - `README.md`
@@ -72,6 +75,7 @@ docker run --rm \
 ```
 
 Notes :
+
 - `data/.jwt_secret.key` est persistant et peut etre conservé entre les runs.
 - `data/api/users.db.json` et `data/api/tokens.db.json` sont persistés via le point de montage `/data`.
 

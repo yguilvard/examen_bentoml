@@ -1,6 +1,5 @@
 """JWT authentication tests for the protected prediction endpoint."""
 
-import os
 from datetime import datetime, timedelta, timezone
 
 import requests

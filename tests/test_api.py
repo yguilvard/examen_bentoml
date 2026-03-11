@@ -1,5 +1,4 @@
 # Python imports
-import os
 import requests
 from jwt import decode as jwt_decode
 
