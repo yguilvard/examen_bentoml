@@ -16,6 +16,8 @@ Cette archive contient:
 docker load -i admission_service_docker_image.tar.gz
 ```
 
+L'image de rendu est construite pour `linux/amd64`.
+
 ### 2. Initialiser le stockage persistant local
 
 ```bash
@@ -24,20 +26,26 @@ mkdir -p data/api
 
 # Création du secret
 docker run --rm \
+  --user root \
+  -e PYTHONPATH=/home/bentoml/bento/src \
   -v "$(pwd)/data:/data" \
+  --entrypoint sh \
   admission_service:latest \
-  python -m src.api.create_jwt_secret_file -o /data/.jwt_secret.key
+  -lc '/app/.venv/bin/python -m src.api.create_jwt_secret_file -o /data/.jwt_secret.key'
 
 # Récupération du secret
 export JWT_SECRET_KEY="$(cat data/.jwt_secret.key)"
 
 # Création de l'utilisateur admin (test)
 docker run --rm \
+  --user root \
   -e ADMISSION_DATA_DIRECTORY=/data \
   -e JWT_SECRET_KEY="$JWT_SECRET_KEY" \
+  -e PYTHONPATH=/home/bentoml/bento/src \
   -v "$(pwd)/data:/data" \
+  --entrypoint sh \
   admission_service:latest \
-  python -m src.adapters.users_fs --user admin --password admin
+  -lc '/app/.venv/bin/python -m src.adapters.users_fs --user admin --password admin'
 ```
 
 Notes :
@@ -62,6 +70,9 @@ docker run --rm -p 3000:3000 \
 Dans un second terminal :
 
 ```bash
+# Installation de pip
+sudo apt-get update && sudo apt-get install pip3-python python3.12-venv
+
 # Création de l'environnement virtuel
 python3 -m venv .venv
 

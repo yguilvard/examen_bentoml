@@ -1,27 +1,27 @@
 """Shared HTTP test helpers."""
 
-import random
-from typing import Any, Hashable
-
-import pandas as pd
 import requests
 
-from src.data.constants import PROCESSED_DATA_DIRECTORY
+VALID_STUDENT = {
+    "gre_score": 0.95,
+    "toefl_score": 0.9,
+    "rating": 0.8,
+    "sop": 0.8,
+    "lor": 0.8,
+    "cgpa": 0.85,
+    "research_xp": 1.0,
+}
 
-X_TEST_PATH = PROCESSED_DATA_DIRECTORY / "X_test.csv"
-Y_TEST_PATH = PROCESSED_DATA_DIRECTORY / "y_test.csv"
-TARGET_COLUMN = "chances"
+INVALID_STUDENT = {
+    "gre": 320,
+    "gpa": 3.5,
+    "rank": 2,
+}
 
 
-def get_random_student() -> tuple[dict[Hashable, Any], float]:
-    """Return one random student from the processed test split."""
-    x_test = pd.read_csv(X_TEST_PATH)
-    y_test = pd.read_csv(Y_TEST_PATH)
-
-    random_index = random.randint(0, len(x_test) - 1)
-    student_features = x_test.iloc[random_index].to_dict()
-    true_admission_chance = float(y_test.iloc[random_index][TARGET_COLUMN])
-    return student_features, true_admission_chance
+def get_random_student() -> tuple[dict[str, float], float]:
+    """Return a valid prediction payload used by HTTP tests."""
+    return VALID_STUDENT, 0.0
 
 
 def get_access_token(api_config: dict[str, str | int]) -> str:

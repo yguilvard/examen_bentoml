@@ -3,6 +3,7 @@
 BENTO_NAME := admission_service
 BENTO_TAG := $(BENTO_NAME):latest
 TEST_PORT ?= 3000
+DOCKER_PLATFORM ?= linux/amd64
 DATA_DIRECTORY ?= $(PWD)/data
 JWT_SECRET_FILE := $(PWD)/.jwt_secret
 SUBMISSION_DIR := dist/submission
@@ -58,7 +59,11 @@ bento-export:
 	@uv run bentoml export $(BENTO_TAG) ./dist/$(BENTO_NAME).bento
 
 bento-containerize:
-	@uv run bentoml containerize $(BENTO_TAG) --image-tag $(BENTO_NAME):latest
+	@uv run bentoml containerize $(BENTO_TAG) \
+		--backend buildx \
+		--platform $(DOCKER_PLATFORM) \
+		--load \
+		--image-tag $(BENTO_NAME):latest
 
 bento-container-serve: bento-build bento-containerize
 	@ADMISSION_DATA_DIRECTORY=$(DATA_DIRECTORY) JWT_SECRET_KEY=$$(cat "$(JWT_SECRET_FILE)") uv run python -m src.adapters.users_fs --user admin --password admin

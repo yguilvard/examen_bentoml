@@ -3,7 +3,7 @@
 import pytest
 import requests
 
-from tests.utils import get_access_token, get_random_student
+from tests.utils import INVALID_STUDENT, get_access_token, get_random_student
 
 
 @pytest.mark.parametrize(
@@ -13,6 +13,8 @@ from tests.utils import get_access_token, get_random_student
         "Bearer invalid-token",
     ],
 )
+
+
 def test_predict_returns_401_when_token_is_missing_or_invalid(
     api_config: dict[str, str | int],
     authorization_header: str | None,
@@ -62,15 +64,10 @@ def test_predict_returns_error_for_invalid_input_data(
 ) -> None:
     """Schema-invalid payloads must be rejected by the API."""
     token = get_access_token(api_config)
-    invalid_student_features = {
-        "gre": 320,
-        "gpa": 3.5,
-        "rank": 2,
-    }
 
     response = requests.post(
         f"{api_config['base_url']}/predict",
-        json={"request": invalid_student_features},
+        json={"request": INVALID_STUDENT},
         headers={"Authorization": f"Bearer {token}"},
         timeout=10,
     )

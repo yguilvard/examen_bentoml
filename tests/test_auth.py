@@ -1,16 +1,21 @@
 """JWT authentication tests for the protected prediction endpoint."""
 
+import os
 from datetime import datetime, timedelta, timezone
 
 import requests
 from jwt import encode as jwt_encode
 
-from src.api.constants import JWT_ALGORITHM, JWT_SECRET_KEY
 from tests.utils import get_random_student
 
 
+JWT_ALGORITHM = "HS256"
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "")
+
+
 def test_predict_with_expired_token_returns_401(api_config: dict[str, str | int]) -> None:
-    """Expired JWTs must not authorize prediction calls."""
+    """Expired JWTs must not allow prediction calls."""
+    assert JWT_SECRET_KEY, "JWT_SECRET_KEY must be set for API tests."
     X, _ = get_random_student()
     expired_token = jwt_encode(
         {

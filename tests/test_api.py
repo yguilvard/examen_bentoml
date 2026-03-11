@@ -1,13 +1,16 @@
-"""Login endpoint tests."""
-
+# Python imports
+import os
 import requests
 from jwt import decode as jwt_decode
 
-from src.api.constants import JWT_ALGORITHM, JWT_SECRET_KEY
+# Constants
+JWT_ALGORITHM = "HS256"
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "")
 
 
 def test_login_returns_valid_jwt_for_valid_credentials(api_config: dict[str, str | int]) -> None:
     """Valid credentials should yield a decodable JWT."""
+    assert JWT_SECRET_KEY, "JWT_SECRET_KEY must be set for API tests."
     response = requests.post(
         f"{api_config['base_url']}/login",
         json={
