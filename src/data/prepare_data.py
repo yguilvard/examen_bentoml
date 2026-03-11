@@ -4,11 +4,11 @@ from pathlib import Path
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from src.data.constants import PROCESSED_DATA_DIRECTORY, RANDOM_STATE, RAW_DATA_LOCAL_FILENAME, TEST_SIZE
+from src.admission.constants import FEATURE_MAX_VALUES
+# from src.data.normalize import normalize_features
+from src.data.constants import PROCESSED_DATA_DIRECTORY, RANDOM_STATE, RAW_DATA_LOCAL_FILENAME, TEST_SIZE, USELESS_COLUMNS, TARGET_COLUMN
 
 
-TARGET_COLUMN = "chances"
-USELESS_COLUMNS = ["Serial No."]
 
 COLUMN_MAPPINGS = {
     "GRE Score": "gre_score",
@@ -21,41 +21,31 @@ COLUMN_MAPPINGS = {
     "Chance of Admit": "chances"
 }
 
-FEATURE_MAX_VALUES = {
-    "gre_score": 340.0,
-    "toefl_score": 120.0,
-    "rating": 5.0,
-    "sop": 5.0,
-    "lor": 5.0,
-    "cgpa": 10.0,
-    "research_xp": 1.0,
-    "chances": 1.0
-}
-
 
 def load_dataset(file_path: Path = RAW_DATA_LOCAL_FILENAME) -> pd.DataFrame:
     """Load the admissions dataset from disk."""
     return pd.read_csv(file_path)
 
 
-def clean_dataset(dataframe: pd.DataFrame) -> pd.DataFrame:
+def process_dataset(dataframe: pd.DataFrame) -> pd.DataFrame:
     """Normalize column names and remove rows that cannot be used for training."""
-    cleaned = dataframe.copy()
-    cleaned.columns = cleaned.columns.str.strip()
+    processed = dataframe.copy()
+    processed.columns = processed.columns.str.strip()
 
     # Remove useless columns, duplicates and rows with missing values.
-    cleaned = cleaned.drop(columns=USELESS_COLUMNS, errors="ignore")
-    cleaned = cleaned.drop_duplicates()
-    cleaned = cleaned.dropna()
+    processed = processed.drop(columns=USELESS_COLUMNS, errors="ignore")
+    processed = processed.drop_duplicates()
+    processed = processed.dropna()
 
     # Rename columns to match the Student dataclass fields.
-    cleaned = cleaned.rename(columns=COLUMN_MAPPINGS)
+    processed = processed.rename(columns=COLUMN_MAPPINGS)
 
-    # Scale feature columns. (Target column max is 1.0 so it will not be affected by the scaling)
+    # Apply the normalization function to the features (target column skipped)
+    #processed = processed.apply(lambda row: normalize_features(row.to_dict()), axis=1)
     for column, max_value in FEATURE_MAX_VALUES.items():
-        cleaned[column] = cleaned[column] / max_value
-
-    return cleaned
+        processed[column] = processed[column] / max_value
+    
+    return processed
 
 
 def save_processed_data(
@@ -88,7 +78,7 @@ def prepare_data(
     dataset = load_dataset(input_path)
 
     # Preparing the data
-    cleaned_dataset = clean_dataset(dataset)
+    cleaned_dataset = process_dataset(dataset)
 
     # Split the dataset into features and target
     y = cleaned_dataset[TARGET_COLUMN]

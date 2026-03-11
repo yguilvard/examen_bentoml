@@ -3,7 +3,7 @@
 import pytest
 import requests
 
-from tests.utils import INVALID_STUDENT, get_access_token, get_random_student
+from utils import INVALID_STUDENT, OUT_OF_RANGE_STUDENT, get_access_token, get_random_student
 
 
 @pytest.mark.parametrize(
@@ -73,5 +73,23 @@ def test_predict_returns_error_for_invalid_input_data(
     )
 
     assert response.status_code in {400, 422}, (
+        f"Unexpected response: [{response.status_code}] {response.text}"
+    )
+
+
+def test_predict_returns_400_for_out_of_range_input(
+    api_config: dict[str, str | int],
+) -> None:
+    """Out-of-range raw values must be rejected before normalization."""
+    token = get_access_token(api_config)
+
+    response = requests.post(
+        f"{api_config['base_url']}/predict",
+        json={"request": OUT_OF_RANGE_STUDENT},
+        headers={"Authorization": f"Bearer {token}"},
+        timeout=10,
+    )
+
+    assert response.status_code == 400, (
         f"Unexpected response: [{response.status_code}] {response.text}"
     )

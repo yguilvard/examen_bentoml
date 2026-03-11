@@ -1,8 +1,9 @@
 # Internal imports
+from src.data.normalize import normalize_features
 from src.api.tokens import APIToken
 from src.adapters.users_fs import UsersDB
 from src.adapters.tokens_fs import TokensDB
-from src.admission.errors import InvalidTokenError
+from src.admission.errors import InvalidTokenError, ScoreTooHighError, ScoreTooLowError
 from src.models.constants import BENTOML_MODEL_TAG, BENTOML_MODEL_VERSION
 
 
@@ -85,7 +86,14 @@ class AdmissionService:
             ctx.response.status_code = status.HTTP_401_UNAUTHORIZED
             return {"error": str(exc)}
 
-        features = pd.DataFrame([request.model_dump()])
+        try:
+            features = pd.DataFrame(
+                [normalize_features(request.model_dump())])
+        except (ScoreTooHighError, ScoreTooLowError) as exc:
+            logger.warning("Prediction rejected: %s", exc)
+            ctx.response.status_code = status.HTTP_400_BAD_REQUEST
+            return {"error": str(exc)}
+
         prediction = float(self.model.predict(features)[0])  # type: ignore
         logger.info("Prediction succeeded for user=%s", payload["sub"])
         return {'prediction': prediction}

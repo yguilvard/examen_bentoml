@@ -3,12 +3,12 @@
 import requests
 
 VALID_STUDENT = {
-    "gre_score": 0.95,
-    "toefl_score": 0.9,
-    "rating": 0.8,
-    "sop": 0.8,
-    "lor": 0.8,
-    "cgpa": 0.85,
+    "gre_score": 320.0,
+    "toefl_score": 110.0,
+    "rating": 4.0,
+    "sop": 4.0,
+    "lor": 4.0,
+    "cgpa": 8.5,
     "research_xp": 1.0,
 }
 
@@ -16,6 +16,16 @@ INVALID_STUDENT = {
     "gre": 320,
     "gpa": 3.5,
     "rank": 2,
+}
+
+OUT_OF_RANGE_STUDENT = {
+    "gre_score": 500.0,
+    "toefl_score": 110.0,
+    "rating": 4.0,
+    "sop": 4.0,
+    "lor": 4.0,
+    "cgpa": 8.5,
+    "research_xp": 1.0,
 }
 
 

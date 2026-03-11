@@ -36,12 +36,12 @@ serve:
 test:
 	@TEST_API_USERNAME=admin TEST_API_PASSWORD=admin TEST_API_PORT=$(TEST_PORT) JWT_SECRET_KEY=$$(cat "$(JWT_SECRET_FILE)") uv run pytest -v -s tests/
 	@echo "TOKEN=$$(curl -s -X POST http://localhost:$(TEST_PORT)/login -H \"Content-Type: application/json\" -d '{\"username\":\"admin\",\"password\":\"admin\"}' | python3 -c \"import sys, json; print(json.load(sys.stdin)['access_token'])\")"
-	@echo "curl -s -X POST http://localhost:$(TEST_PORT)/predict -H \"Content-Type: application/json\" -H \"Authorization: Bearer \$$TOKEN\" -d '{\"request\":{\"gre_score\":0.95,\"toefl_score\":0.9,\"rating\":0.8,\"sop\":0.8,\"lor\":0.8,\"cgpa\":0.85,\"research_xp\":1.0}}'"
+	@echo "curl -s -X POST http://localhost:$(TEST_PORT)/predict -H \"Content-Type: application/json\" -H \"Authorization: Bearer \$$TOKEN\" -d '{\"request\":{\"gre_score\":320,\"toefl_score\":110,\"rating\":4,\"sop\":4,\"lor\":4,\"cgpa\":8.5,\"research_xp\":1}}'"
 	@TOKEN=$$(curl -s -X POST http://localhost:$(TEST_PORT)/login -H "Content-Type: application/json" -d '{"username":"admin","password":"admin"}' | python3 -c "import sys, json; print(json.load(sys.stdin)['access_token'])"); \
 	curl -s -X POST http://localhost:$(TEST_PORT)/predict \
 		-H "Content-Type: application/json" \
 		-H "Authorization: Bearer $$TOKEN" \
-		-d '{"request":{"gre_score":0.95,"toefl_score":0.9,"rating":0.8,"sop":0.8,"lor":0.8,"cgpa":0.85,"research_xp":1.0}}'
+		-d '{"request":{"gre_score":320,"toefl_score":110,"rating":4,"sop":4,"lor":4,"cgpa":8.5,"research_xp":1}}'
 
 bento-build:
 	@uv run bentoml build -f bentofile.yaml --name $(BENTO_NAME)
@@ -69,7 +69,7 @@ bento-container-serve: bento-build bento-containerize
 	@ADMISSION_DATA_DIRECTORY=$(DATA_DIRECTORY) JWT_SECRET_KEY=$$(cat "$(JWT_SECRET_FILE)") uv run python -m src.adapters.users_fs --user admin --password admin
 	@JWT_SECRET_KEY=$$(cat "$(JWT_SECRET_FILE)") docker-compose up
 
-archive: bento-containerize
+archive: init prepare train bento-build bento-containerize
 	@mkdir -p $(SUBMISSION_DIR)
 	@rm -rf $(SUBMISSION_DIR)/tests
 	@cp README.md $(SUBMISSION_DIR)/README.md

@@ -5,12 +5,13 @@ from jwt import decode as jwt_decode
 
 # Constants
 JWT_ALGORITHM = "HS256"
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "")
 
 
-def test_login_returns_valid_jwt_for_valid_credentials(api_config: dict[str, str | int]) -> None:
+def test_login_returns_valid_jwt_for_valid_credentials(
+    api_config: dict[str, str | int],
+    jwt_secret_key: str,
+) -> None:
     """Valid credentials should yield a decodable JWT."""
-    assert JWT_SECRET_KEY, "JWT_SECRET_KEY must be set for API tests."
     response = requests.post(
         f"{api_config['base_url']}/login",
         json={
@@ -29,7 +30,7 @@ def test_login_returns_valid_jwt_for_valid_credentials(api_config: dict[str, str
 
     payload = jwt_decode(
         token,
-        JWT_SECRET_KEY,
+        jwt_secret_key,
         algorithms=[JWT_ALGORITHM],
     )
     assert payload["sub"] == api_config["username"]

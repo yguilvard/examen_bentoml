@@ -13,3 +13,7 @@ PROCESSED_DATA_DIRECTORY = DATA_DIRECTORY / 'processed'
 # Data sets
 TEST_SIZE = 0.2
 RANDOM_STATE = 42
+
+# Admission dataset specific constants
+TARGET_COLUMN = "chances"
+USELESS_COLUMNS = ["Serial No."]
